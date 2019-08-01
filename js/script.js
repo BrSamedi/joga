@@ -43,7 +43,7 @@ window.addEventListener('DOMContentLoaded', function() { //загрузилос�
 
     //Timer
 
-    let deadline = '2019-07-31';
+    let deadline = '2019-08-03';
 
     function getTimeRemaining(endtime) {
         let t = Date.parse(endtime) - Date.parse(new Date()),
@@ -96,5 +96,70 @@ window.addEventListener('DOMContentLoaded', function() { //загрузилос�
 // let hours = document.getElementsByClassName('hours');
 //     hours[0].textContent = '122';
     setClock('timer', deadline);
+
+    //Modal
+
+    let more = document.querySelector('.more'),
+        overlay = document.querySelector('.overlay'),
+        close  = document.querySelector('.popup-close');
+    more.addEventListener('click', function() {
+        overlay.style.display = 'block';
+        this.classList.add('more-splash');
+        document.body.style.overflow = 'hidden';
+    });
+    close.addEventListener('click', function() {
+        overlay.style.display = 'none';
+        more.classList.remove('more-splash');
+        document.body.style.overflow = '';
+    });
+
+    // Form
+
+    let message = {
+        loading: 'Загрузка...',
+        success: 'Спасибо! Скоро мы с вами свяжемся!',
+        failure: 'Что-то пошло не так...'
+    };
+
+    let form = document.querySelector('.main-form'),
+        input = form.getElementsByTagName('input'),
+        statusMessage = document.createElement('div');
+
+    statusMessage.classList.add('status');
+
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        form.appendChild(statusMessage);
+
+        let request = new XMLHttpRequest();
+        request.open('POST', 'server.php');
+        //request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded'); //Отправка в формате FormData
+        request.setRequestHeader('Content-type', 'application/json; charset=utf-8'); //JSON
+
+        let formData = new FormData(form);
+
+        let obj = {};
+        formData.forEach(function(value,key) {
+            obj[key] = value;
+        });
+        let json = JSON.stringify(obj);
+
+        //request.send(formData); //Отправка FormData
+        request.send(json); //Отправка JSON
+
+        request.addEventListener('readystatechange', function() {
+            if (request.readyState < 4) {
+                statusMessage.innerHTML = message.loading;
+            } else if (request.readyState == 4 && request.status ==200) {
+                statusMessage.innerHTML = message.success;
+            } else {
+                statusMessage.innerHTML = message.failure;
+            }
+        });
+
+        for (let i =0; i < input.length; i++) {
+            input[i].value = '';
+        }
+    });
 }); 
 
